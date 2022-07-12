@@ -1,0 +1,52 @@
+classdef PlateLoss
+    properties %(input)
+       Temp_face {mustBeNumeric} % Temperature at the face [K]
+       Temp_surr {mustBeNumeric} % Temperature of the surrounding [K]
+       Length {mustBeNumeric} % Length of the plate [m]
+       Width {mustBeNumeric} % Width of the plate [m]
+       Thickness {mustBeNumeric} % Thickness of the plate [m]
+       Material % Material ['ss' 'in' 'hexane' 'n-dodecane' 'air']
+       Orientation % Orientation of the Plate ['v' for Vertical else horizontal]
+       Loss1 % Loss in a face
+       Loss2 % Loss in a face
+       Loss3 % Loss in a face
+       Loss4 % Loss in a face
+       Loss5 % Loss in a face
+       Loss6 % Loss in a face
+    end
+    properties %(dependent)
+        TotalLoss % Heat losses of the system
+    end
+    methods
+        function Loss = PlateLoss(m,Tsurr,Tface,l,w,t,o)
+           if nargin > 0
+           Loss.Material = m;
+           Loss.Temp_surr = Tsurr;
+           Loss.Temp_face = Tface;
+           Loss.Length = l;
+           Loss.Width = w;
+           Loss.Thickness = t;
+           Loss.Orientation = o;
+           Loss.Loss1 = Faces(Loss.Material,Loss.Temp_surr,Loss.Temp_face,Loss.Length,Loss.Width,Loss.Orientation);
+           Loss.Loss2 = Faces(Loss.Material,Loss.Temp_surr,Loss.Temp_face,Loss.Length,Loss.Width,Loss.Orientation);
+           Loss.Loss3 = Faces(Loss.Material,Loss.Temp_surr,Loss.Temp_face,Loss.Length,Loss.Thickness,Loss.Orientation);
+           Loss.Loss4 = Faces(Loss.Material,Loss.Temp_surr,Loss.Temp_face,Loss.Length,Loss.Thickness,Loss.Orientation);
+           Loss.Loss5 = Faces(Loss.Material,Loss.Temp_surr,Loss.Temp_face,Loss.Length,Loss.Thickness,Loss.Orientation);
+           Loss.Loss6 = Faces(Loss.Material,Loss.Temp_surr,Loss.Temp_face,Loss.Length,Loss.Thickness,Loss.Orientation);
+           end
+        end
+        function Tloss = get.TotalLoss(Loss)
+            Tloss = Loss.Loss1.FaceLoss +Loss.Loss2.FaceLoss + Loss.Loss3.FaceLoss + Loss.Loss4.FaceLoss + Loss.Loss5.FaceLoss + Loss.Loss6.FaceLoss;
+        end
+        function Loss = updateTface(Loss, T)
+            Loss.Temp_face = T;
+            Loss.Loss1 = Loss.Loss1.updateTface(Loss.Temp_face);
+            Loss.Loss2 = Loss.Loss2.updateTface(Loss.Temp_face);
+            Loss.Loss3 = Loss.Loss3.updateTface(Loss.Temp_face);
+            Loss.Loss4 = Loss.Loss4.updateTface(Loss.Temp_face);
+            Loss.Loss5 = Loss.Loss5.updateTface(Loss.Temp_face);
+            Loss.Loss6 = Loss.Loss6.updateTface(Loss.Temp_face);
+            Loss.TotalLoss = Loss.get.TotalLoss();
+        end
+    end
+end
