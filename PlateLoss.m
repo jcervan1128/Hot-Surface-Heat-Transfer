@@ -53,6 +53,7 @@ classdef PlateLoss
         end
         function RHS = ODERHS(Loss,T)
             Loss = Loss.updateTface(T);
+            A = 15;
             RHS = 1 / A * (Loss.PHeating - Loss.get_TotalLoss());
             % TODO: replace A by adequate quantities to match your ODE
             % TODO: confirm that Loss.get_TotalLoss is a positive quantity
@@ -70,7 +71,7 @@ classdef PlateLoss
             
             PlateLoss.setTStopCrit(TStopCrit);
             dummyfun = @(t,T) Loss.ODERHS(T);
-            options = odeset('Events',stopODE);
+            options = odeset('Events',@PlateLoss.stopODE);
             [tvec,Tvec] = ode45(dummyfun, [0 tmax], Loss.Temp_face,options);
             
         end
@@ -83,11 +84,11 @@ classdef PlateLoss
          if nargin
             TstopCrit = Tstop;
          end
-         out = Tstop;
+         out = TstopCrit;
       end
       function [value,isterminal,direction] = stopODE(t,y)
         % dummy function used within ODESolve
-        stopT = PlateLoss.setTStopCrit;
+        stopT = PlateLoss.setTStopCrit();
         value = y - stopT;
         isterminal = 1;
         direction = 0;
