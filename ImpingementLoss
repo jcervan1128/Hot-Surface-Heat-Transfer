@@ -1,4 +1,4 @@
-classdef Impingememt
+classdef Impingement
     properties %(input)
        Temp_face {mustBeNumeric} % Temperature at the face [K]
        Temp_fluid {mustBeNumeric} % Temperature of the surrounding [K]
@@ -7,7 +7,7 @@ classdef Impingememt
        Material % Material ['ss' 'in' 'hexane' 'n-dodecane' 'air']
        Fluid % Fuel that leaked ['hexane' 'n-dodecane']
        Orientation % Orientation of the Plate ['v' for Vertical else horizontal]
-       Mass_rate % Mass flow rate of leakage
+       Mass_rate % Mass flow rate of leakage[5.6e-5 - 1.7e-4 (kg/s) **CONVERT TO g/s when entering to maintain Watts output]
     end
     properties %(dependent)
        RCLoss % Losses due to radiation and natural convection
@@ -20,30 +20,25 @@ classdef Impingememt
            imp.Temp_face = Tface;
            m = lower(m);
            imp.Material = Materials(m,imp.Temp_face,imp.Temp_fluid);
-           imp.Fluid = f;
+           imp.Fluid = Materials(f,imp.Temp_fluid,imp.Temp_face);
            imp.Length = l;
            imp.Width = w;
            imp.Orientation = o;
            imp.Mass_rate = mfr;
-           imp.RCLoss = Faces(m,imp.Temp_surr,imp.Temp_face,imp.Length,imp.Width,imp.Orientation);
+           imp.RCLoss = Faces(m,'air',imp.Temp_fluid,imp.Temp_face,imp.Length,imp.Width,imp.Orientation);
         end
-        function vap = get.VapLoss(imp)
-            if strcmpi(imp.Fluid,'Hexane')
-                hex = Materials(imp.Fluid,imp.Temp_fluid,imp.Temp_face);
-                vap = imp.Mass_rate*(hex.Latent+hex.capacity*(hex.CriticalTemp-imp.Temp_fluid));
-            elseif strcmpi(imp.Fluid,'n-dodecane')
-                nd = Materials(imp.Fluid,imp.Temp_fluid,imp.Temp_face);
-                vap = imp.Mass_rate*(nd.Latent+nd.capacity*(nd.CriticalTemp-imp.Temp_fluid));
-            else
-                error('Fuel leaked is not defined')
-            end
+        function vap = get_VapLoss(imp)
+            vap = imp.Mass_rate*(imp.Fluid.Latent+imp.Fluid.capacity*(imp.Fluid.CriticalTemp-imp.Temp_fluid));
         end
-        function tloss = get.TotalLoss(imp)
+        function tloss = get_TotalLoss(imp)
             tloss = imp.RCLoss.FaceLoss + imp.VapLoss;
+        end
+        function imp = updateTface(imp,T)
+            imp.Temp_face = T;
+            imp.RCLoss = imp.RCLoss.updateTface(imp.Temp_face);
+            imp.Fluid = imp.Fluid.updateTface(imp.Temp_face);
+            imp.VapLoss = imp.get_VapLoss();
+            imp.TotalLoss = imp.get_TotalLoss();
         end
     end
 end
-
-
-
-% Create an update function for the losses of vaporizing the fuel.
