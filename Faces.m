@@ -27,8 +27,12 @@ classdef Faces
            if nargin > 0
            fac.Temp_surr = Tsurr;
            fac.Temp_face = Tface;
-           m = lower(m);
-           fac.Material = Materials(m,fac.Temp_face,fac.Temp_surr);
+           if strcmp(class(m),'Materials')
+               fac.Material = m;
+           else
+               m = lower(m);
+               fac.Material = Materials(m,fac.Temp_face,fac.Temp_surr);
+           end
            fac.Fluid = Materials(f,fac.Temp_face,fac.Temp_surr);
            fac.Length = l;
            fac.Width = w;
