@@ -27,15 +27,15 @@ classdef PlateLoss
            Loss.Width = w;
            Loss.Thickness = t;
            Loss.Orientation = o;
-           Loss.Loss1 = Faces(Loss.Material,Loss.Temp_surr,Loss.Temp_face,Loss.Length,Loss.Width,Loss.Orientation);
-           Loss.Loss2 = Faces(Loss.Material,Loss.Temp_surr,Loss.Temp_face,Loss.Length,Loss.Width,Loss.Orientation);
-           Loss.Loss3 = Faces(Loss.Material,Loss.Temp_surr,Loss.Temp_face,Loss.Length,Loss.Thickness,Loss.Orientation);
-           Loss.Loss4 = Faces(Loss.Material,Loss.Temp_surr,Loss.Temp_face,Loss.Length,Loss.Thickness,Loss.Orientation);
-           Loss.Loss5 = Faces(Loss.Material,Loss.Temp_surr,Loss.Temp_face,Loss.Length,Loss.Thickness,Loss.Orientation);
-           Loss.Loss6 = Faces(Loss.Material,Loss.Temp_surr,Loss.Temp_face,Loss.Length,Loss.Thickness,Loss.Orientation);
+           Loss.Loss1 = Faces(Loss.Material,'air',Loss.Temp_surr,Loss.Temp_face,Loss.Length,Loss.Width,Loss.Orientation);
+           Loss.Loss2 = Faces(Loss.Material,'air',Loss.Temp_surr,Loss.Temp_face,Loss.Length,Loss.Width,Loss.Orientation);
+           Loss.Loss3 = Faces(Loss.Material,'air',Loss.Temp_surr,Loss.Temp_face,Loss.Length,Loss.Thickness,Loss.Orientation);
+           Loss.Loss4 = Faces(Loss.Material,'air',Loss.Temp_surr,Loss.Temp_face,Loss.Length,Loss.Thickness,Loss.Orientation);
+           Loss.Loss5 = Faces(Loss.Material,'air',Loss.Temp_surr,Loss.Temp_face,Loss.Length,Loss.Thickness,Loss.Orientation);
+           Loss.Loss6 = Faces(Loss.Material,'air',Loss.Temp_surr,Loss.Temp_face,Loss.Length,Loss.Thickness,Loss.Orientation);
            end
         end
-        function Tloss = get.TotalLoss(Loss)
+        function Tloss = get_TotalLoss(Loss)
             Tloss = Loss.Loss1.FaceLoss +Loss.Loss2.FaceLoss + Loss.Loss3.FaceLoss + Loss.Loss4.FaceLoss + Loss.Loss5.FaceLoss + Loss.Loss6.FaceLoss;
         end
         function Loss = updateTface(Loss, T)
@@ -46,7 +46,7 @@ classdef PlateLoss
             Loss.Loss4 = Loss.Loss4.updateTface(Loss.Temp_face);
             Loss.Loss5 = Loss.Loss5.updateTface(Loss.Temp_face);
             Loss.Loss6 = Loss.Loss6.updateTface(Loss.Temp_face);
-            Loss.TotalLoss = Loss.get.TotalLoss();
+            Loss.TotalLoss = Loss.get_TotalLoss();
         end
     end
 end
