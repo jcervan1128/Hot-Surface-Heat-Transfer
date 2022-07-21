@@ -39,7 +39,7 @@ classdef PlateLoss
            end
         end
         function Tloss = get_TotalLoss(Loss)
-            Tloss = Loss.Loss1.FaceLoss +Loss.Loss2.FaceLoss + Loss.Loss3.FaceLoss + Loss.Loss4.FaceLoss + Loss.Loss5.FaceLoss + Loss.Loss6.FaceLoss;
+            Tloss = (Loss.Loss1.FaceLoss +Loss.Loss2.FaceLoss + Loss.Loss3.FaceLoss + Loss.Loss4.FaceLoss + Loss.Loss5.FaceLoss + Loss.Loss6.FaceLoss)/1000;
         end
         function Loss = updateTface(Loss, T)
             Loss.Temp_face = T;
@@ -53,13 +53,14 @@ classdef PlateLoss
         end
         function RHS = ODERHS(Loss,T)
             Loss = Loss.updateTface(T);
-            A = 15;
+            A = Loss.Loss1.Material.rho * Loss.Loss1.Material.Capacity * Loss.Length * Loss.Width * Loss.Thickness;
             RHS = 1 / A * (Loss.PHeating - Loss.get_TotalLoss());
-            % TODO: replace A by adequate quantities to match your ODE
-            % TODO: confirm that Loss.get_TotalLoss is a positive quantity
+            % TODO: replace A by adequate quantities to match your ODE (Complete)
+            % TODO: confirm that Loss.get_TotalLoss is a positive quantity (Complete as long as T > 298)
         end
         function TEq = TEquil(Loss)
             % TODO: implement function that returns TEq such that Loss.ODERHS(T) == 0
+            
         end
         
         function [tvec,Tvec] = ODESolve(Loss,tmax,TStopCrit)
