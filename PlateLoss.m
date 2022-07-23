@@ -60,6 +60,15 @@ classdef PlateLoss
         end
         function TEq = TEquil(Loss)
             % TODO: implement function that returns TEq such that Loss.ODERHS(T) == 0
+            temp = 0:.1:1200;
+            for i in temp
+            Loss = Loss.updateTface(i);
+                if Loss.TotalLoss < 0
+                    break
+                else
+                fun = Loss.TotalLoss - Loss.PHeating
+                
+            end
             
         end
         
