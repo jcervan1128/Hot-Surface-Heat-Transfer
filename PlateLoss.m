@@ -59,11 +59,11 @@ classdef PlateLoss
             % TODO: confirm that Loss.get_TotalLoss is a positive quantity (Complete as long as T > 298)
         end
         function TEq = TEquil(Loss)
-            % TODO: implement function that returns TEq such that Loss.ODERHS(T) == 0
-            fun = @(T) Loss.ODERHS(T); % function
-            T0 = [298 1200]; % initial interval
+            % TODO: implement function that returns TEq such that Loss.ODERHS(T) == 0 (Complete and works for different Pheating)
+            fun = @(T) Loss.ODERHS(T); % function of dT/dt
+            T0 = [298 1200]; % Temperature interval of interest
             options = optimset('Display','iter'); % show iterations
-            TEq = fzero(fun,T0,options);
+            TEq = fzero(fun,T0,options); % Temperature at which Losses are equal to the heat source(net zero)
         end
         
         function [tvec,Tvec] = ODESolve(Loss,tmax,TStopCrit)
