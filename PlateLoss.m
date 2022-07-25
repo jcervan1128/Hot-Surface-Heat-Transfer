@@ -7,17 +7,17 @@ classdef PlateLoss
        Thickness {mustBeNumeric} % Thickness of the plate [m]
        Material % Material ['ss' 'in' 'hexane' 'n-dodecane' 'air']
        Orientation % Orientation of the Plate ['v' for Vertical else horizontal]
-       Loss1 % Loss in a face
-       Loss2 % Loss in a face
-       Loss3 % Loss in a face
-       Loss4 % Loss in a face
-       Loss5 % Loss in a face
-       Loss6 % Loss in a face
-       PHeating % Thermal power of the heater -- for know assumed constant
-       TStopCrit % Stop criterion for 
+       Loss1 % Loss in a face [W]
+       Loss2 % Loss in a face [W]
+       Loss3 % Loss in a face [W]
+       Loss4 % Loss in a face [W]
+       Loss5 % Loss in a face [W]
+       Loss6 % Loss in a face [W]
+       PHeating % Thermal power of the heater -- for know assumed constant [kW]
+       TStopCrit % Stop criterion for [K]
     end
     properties %(dependent)
-        TotalLoss % Heat losses of the system
+        TotalLoss % Heat losses of the system [kW]
     end
     methods
         function Loss = PlateLoss(m,Tsurr,Tface,l,w,t,o,Ph)
@@ -53,7 +53,7 @@ classdef PlateLoss
         end
         function RHS = ODERHS(Loss,T)
             Loss = Loss.updateTface(T);
-            A = Loss.Loss1.Material.rho * Loss.Loss1.Material.Capacity * Loss.Length * Loss.Width * Loss.Thickness;
+            A = Loss.Loss1.Material.rho * Loss.Loss1.Material.capacity * Loss.Length * Loss.Width * Loss.Thickness;
             RHS = 1 / A * (Loss.PHeating - Loss.get_TotalLoss());
             % TODO: replace A by adequate quantities to match your ODE (Complete)
             % TODO: confirm that Loss.get_TotalLoss is a positive quantity (Complete as long as T > 298)
@@ -63,7 +63,7 @@ classdef PlateLoss
             fun = @(T) Loss.ODERHS(T); % function
             T0 = [298 1200]; % initial interval
             options = optimset('Display','iter'); % show iterations
-            [T fval exitflag output] = fzero(fun,T0,options)
+            TEq = fzero(fun,T0,options);
         end
         
         function [tvec,Tvec] = ODESolve(Loss,tmax,TStopCrit)
