@@ -63,7 +63,7 @@ classdef PlateLoss
             fun = @(T) Loss.ODERHS(T); % function
             T0 = [298 1200]; % initial interval
             options = optimset('Display','iter'); % show iterations
-            [T Tval exitflag output] = fzero(fun,T0,options)
+            [T fval exitflag output] = fzero(fun,T0,options)
         end
         
         function [tvec,Tvec] = ODESolve(Loss,tmax,TStopCrit)
