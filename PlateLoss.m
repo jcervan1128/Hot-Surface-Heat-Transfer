@@ -60,16 +60,10 @@ classdef PlateLoss
         end
         function TEq = TEquil(Loss)
             % TODO: implement function that returns TEq such that Loss.ODERHS(T) == 0
-            temp = 0:.1:1200;
-            for i in temp
-            Loss = Loss.updateTface(i);
-                if Loss.TotalLoss < 0
-                    break
-                else
-                fun = Loss.TotalLoss - Loss.PHeating
-                
-            end
-            
+            fun = @(T) Loss.ODERHS(T); % function
+            T0 = [298 1200]; % initial interval
+            options = optimset('Display','iter'); % show iterations
+            [T Tval exitflag output] = fzero(fun,T0,options)
         end
         
         function [tvec,Tvec] = ODESolve(Loss,tmax,TStopCrit)
