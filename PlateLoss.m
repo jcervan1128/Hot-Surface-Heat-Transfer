@@ -61,7 +61,7 @@ classdef PlateLoss
         function TEq = TEquil(Loss)
             % TODO: implement function that returns TEq such that Loss.ODERHS(T) == 0 (Complete and works for different Pheating)
             fun = @(T) Loss.ODERHS(T); % function of dT/dt
-            T0 = [298 1200]; % Temperature interval of interest
+            T0 = [298 1700]; % Temperature interval of interest
             options = optimset('Display','iter'); % show iterations
             TEq = fzero(fun,T0,options); % Temperature at which Losses are equal to the heat source(net zero)
         end
