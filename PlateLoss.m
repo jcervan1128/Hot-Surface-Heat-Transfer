@@ -16,7 +16,7 @@ classdef PlateLoss
        Loss4 % Loss in a face
        Loss5 % Loss in a face
        Loss6 % Loss in a face
-       PHeating % Thermal power of the heater -- for know assumed constant
+       PHeating % Thermal power of the heater -- for know assumed constant ** CONVERT TO kW
     end
     properties %(dependent)
         TotalLoss % Heat losses of the system
@@ -34,7 +34,7 @@ classdef PlateLoss
            Loss.Thickness = t;
            Loss.Orientation = o;
            Loss.Mass_rate = mfr;
-           Loss.Loss1 = Impingement(Loss.Material,Loss.Fluid,Loss.Temp_fluid,Loss.Temp_face,Loss.Length,Loss.Width,Loss.Orientation,Loss.Mass_rate);
+           Loss.Loss1 = ImpingementLoss(Loss.Material,Loss.Fluid,Loss.Temp_fluid,Loss.Temp_face,Loss.Length,Loss.Width,Loss.Orientation,Loss.Mass_rate);
           % Loss.Loss1 = Faces(Loss.Material,'air',Loss.Temp_surr,Loss.Temp_face,Loss.Length,Loss.Width,Loss.Orientation);
            Loss.Loss2 = Faces(Loss.Material,'air',Loss.Temp_surr,Loss.Temp_face,Loss.Length,Loss.Width,Loss.Orientation);
            Loss.Loss3 = Faces(Loss.Material,'air',Loss.Temp_surr,Loss.Temp_face,Loss.Length,Loss.Thickness,Loss.Orientation);
@@ -84,7 +84,7 @@ classdef PlateLoss
             options = odeset('Events',@PlateLoss.stopODE);
             [tvec,Tvec] = ode45(dummyfun, [0 tmax], Loss.Temp_face,options);
                 
-            crit = Loss.TEquil * .99;
+            crit = Loss.TEquil * .95;
             time = interp1(Tvec,tvec,crit);
             disp(append('Time to heat ',string(time),' seconds'));
             
@@ -92,7 +92,7 @@ classdef PlateLoss
             grid on;
             xlabel('Time (s)');
             ylabel('Temeprature (K)');
-            title(append(Loss.Material,' ','Plate Heating'));
+            title(append(Loss.Material.Material,' ','Plate Heating'));
         end
     end
     

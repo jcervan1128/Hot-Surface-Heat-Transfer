@@ -1,4 +1,4 @@
-classdef Impingement
+classdef ImpingementLoss
     properties %(input)
        Temp_face {mustBeNumeric} % Temperature at the face [K]
        Temp_fluid {mustBeNumeric} % Temperature of the surrounding [K]
@@ -15,12 +15,11 @@ classdef Impingement
        TotalLoss % Sum of all losses associated to the face
     end
     methods
-        function imp = Impingement(m,f,Tfluid,Tface,l,w,o,mfr)
+        function imp = ImpingementLoss(m,f,Tfluid,Tface,l,w,o,mfr)
            imp.Temp_fluid = Tfluid;
            imp.Temp_face = Tface;
-           m = lower(m);
-           imp.Material = Materials(m,imp.Temp_face,imp.Temp_fluid);
-           imp.Fluid = Materials(f,imp.Temp_fluid,imp.Temp_face);
+           imp.Material = m;
+           imp.Fluid = f;
            imp.Length = l;
            imp.Width = w;
            imp.Orientation = o;
@@ -35,6 +34,7 @@ classdef Impingement
         end
         function imp = updateTface(imp,T)
             imp.Temp_face = T;
+            imp.Material = imp.Material.updateTface(imp.Temp_face);
             imp.RCLoss = imp.RCLoss.updateTface(imp.Temp_face);
             imp.Fluid = imp.Fluid.updateTface(imp.Temp_face);
             imp.VapLoss = imp.get_VapLoss();
