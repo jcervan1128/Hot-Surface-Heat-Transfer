@@ -2,44 +2,51 @@ classdef PlateLoss
     properties %(input)
        Temp_face {mustBeNumeric} % Temperature at the face [K]
        Temp_surr {mustBeNumeric} % Temperature of the surrounding [K]
+       Temp_fluid {mustBeNumeric} % Temperature of the fluid leaking [K]
        Length {mustBeNumeric} % Length of the plate [m]
        Width {mustBeNumeric} % Width of the plate [m]
        Thickness {mustBeNumeric} % Thickness of the plate [m]
        Material % Material ['ss' 'in' 'hexane' 'n-dodecane' 'air']
+       Fluid % Fluid ['hexane' 'n-dodecane']
        Orientation % Orientation of the Plate ['v' for Vertical else horizontal]
-       Loss1 % Loss in a face [W]
-       Loss2 % Loss in a face [W]
-       Loss3 % Loss in a face [W]
-       Loss4 % Loss in a face [W]
-       Loss5 % Loss in a face [W]
-       Loss6 % Loss in a face [W]
-       PHeating % Thermal power of the heater -- for know assumed constant [kW]
-       TStopCrit % Stop criterion for [K]
+       Mass_rate % Mass flow rate of leakage[5.6e-5 - 1.7e-4 (kg/s) **CONVERT TO g/s
+       Loss1 % Loss in a face
+       Loss2 % Loss in a face
+       Loss3 % Loss in a face
+       Loss4 % Loss in a face
+       Loss5 % Loss in a face
+       Loss6 % Loss in a face
+       PHeating % Thermal power of the heater -- for know assumed constant
+       TStopCrit % Stop criterion for 
     end
     properties %(dependent)
-        TotalLoss % Heat losses of the system [kW]
+        TotalLoss % Heat losses of the system
     end
     methods
-        function Loss = PlateLoss(m,Tsurr,Tface,l,w,t,o,Ph)
+        function Loss = PlateLoss(m,f,Tsurr,Tface,Tfluid,l,w,t,o,Ph,mfr)
            if nargin > 0
-               Loss.Material = m;
-               Loss.Temp_surr = Tsurr;
-               Loss.Temp_face = Tface;
-               Loss.Length = l;
-               Loss.Width = w;
-               Loss.Thickness = t;
-               Loss.Orientation = o;
-               Loss.Loss1 = Faces(Loss.Material,'air',Loss.Temp_surr,Loss.Temp_face,Loss.Length,Loss.Width,Loss.Orientation);
-               Loss.Loss2 = Faces(Loss.Material,'air',Loss.Temp_surr,Loss.Temp_face,Loss.Length,Loss.Width,Loss.Orientation);
-               Loss.Loss3 = Faces(Loss.Material,'air',Loss.Temp_surr,Loss.Temp_face,Loss.Length,Loss.Thickness,Loss.Orientation);
-               Loss.Loss4 = Faces(Loss.Material,'air',Loss.Temp_surr,Loss.Temp_face,Loss.Length,Loss.Thickness,Loss.Orientation);
-               Loss.Loss5 = Faces(Loss.Material,'air',Loss.Temp_surr,Loss.Temp_face,Loss.Length,Loss.Thickness,Loss.Orientation);
-               Loss.Loss6 = Faces(Loss.Material,'air',Loss.Temp_surr,Loss.Temp_face,Loss.Length,Loss.Thickness,Loss.Orientation);
-               Loss.PHeating = Ph;
+           Loss.Material = m;
+           Loss.Fluid = f;
+           Loss.Temp_surr = Tsurr;
+           Loss.Temp_face = Tface;
+           Loss.Temp_fluid = Tfluid;
+           Loss.Length = l;
+           Loss.Width = w;
+           Loss.Thickness = t;
+           Loss.Orientation = o;
+           Loss.Mass_rate = mfr;
+           Loss.Loss1 = Impingement(Loss.Material,Loss.Fluid,Loss.Temp_fluid,Loss.Temp_face,Loss.Length,Loss.Width,Loss.Orientation,Loss.Mass_rate);
+          % Loss.Loss1 = Faces(Loss.Material,'air',Loss.Temp_surr,Loss.Temp_face,Loss.Length,Loss.Width,Loss.Orientation);
+           Loss.Loss2 = Faces(Loss.Material,'air',Loss.Temp_surr,Loss.Temp_face,Loss.Length,Loss.Width,Loss.Orientation);
+           Loss.Loss3 = Faces(Loss.Material,'air',Loss.Temp_surr,Loss.Temp_face,Loss.Length,Loss.Thickness,Loss.Orientation);
+           Loss.Loss4 = Faces(Loss.Material,'air',Loss.Temp_surr,Loss.Temp_face,Loss.Length,Loss.Thickness,Loss.Orientation);
+           Loss.Loss5 = Faces(Loss.Material,'air',Loss.Temp_surr,Loss.Temp_face,Loss.Length,Loss.Thickness,Loss.Orientation);
+           Loss.Loss6 = Faces(Loss.Material,'air',Loss.Temp_surr,Loss.Temp_face,Loss.Length,Loss.Thickness,Loss.Orientation);
+           Loss.PHeating = Ph;
            end
         end
         function Tloss = get_TotalLoss(Loss)
-            Tloss = (Loss.Loss1.FaceLoss +Loss.Loss2.FaceLoss + Loss.Loss3.FaceLoss + Loss.Loss4.FaceLoss + Loss.Loss5.FaceLoss + Loss.Loss6.FaceLoss)/1000;
+            Tloss = (Loss.Loss1.TotalLoss +Loss.Loss2.FaceLoss + Loss.Loss3.FaceLoss + Loss.Loss4.FaceLoss + Loss.Loss5.FaceLoss + Loss.Loss6.FaceLoss)/1000;
         end
         function Loss = updateTface(Loss, T)
             Loss.Temp_face = T;
@@ -57,13 +64,13 @@ classdef PlateLoss
             RHS = 1 / A * (Loss.PHeating - Loss.get_TotalLoss());
             % TODO: replace A by adequate quantities to match your ODE (Complete)
             % TODO: confirm that Loss.get_TotalLoss is a positive quantity (Complete as long as T > 298)
-        end
+            end
         function TEq = TEquil(Loss)
-            % TODO: implement function that returns TEq such that Loss.ODERHS(T) == 0 (Complete and works for different Pheating)
-            fun = @(T) Loss.ODERHS(T); % function of dT/dt
-            T0 = [298 1700]; % Temperature interval of interest
-            options = optimset('Display','iter'); % show iterations
-            TEq = fzero(fun,T0,options); % Temperature at which Losses are equal to the heat source(net zero)
+            % TODO: implement function that returns TEq such that Loss.ODERHS(T) == 0
+            fun = @(T) Loss.ODERHS(T); % function
+            T0 = [298 1700]; % initial interval
+            % options = optimset('Display','iter'); % show iterations
+            TEq = fzero(fun,T0);
         end
         
         function [tvec,Tvec] = ODESolve(Loss,tmax,TStopCrit)
@@ -77,7 +84,16 @@ classdef PlateLoss
             dummyfun = @(t,T) Loss.ODERHS(T);
             options = odeset('Events',@PlateLoss.stopODE);
             [tvec,Tvec] = ode45(dummyfun, [0 tmax], Loss.Temp_face,options);
+                
+            crit = Loss.TEquil * .99;
+            time = interp1(Tvec,tvec,crit);
+            disp(append('Time to heat ',string(time),' seconds'));
             
+            plot(tvec,Tvec);
+            grid on;
+            xlabel('Time (s)');
+            ylabel('Temeprature (K)');
+            title(append(Loss.Material,' ','Plate Heating'));
         end
     end
     
@@ -100,5 +116,3 @@ classdef PlateLoss
    end
    
 end
-
-
