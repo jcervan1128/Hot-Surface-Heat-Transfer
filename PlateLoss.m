@@ -17,7 +17,6 @@ classdef PlateLoss
        Loss5 % Loss in a face
        Loss6 % Loss in a face
        PHeating % Thermal power of the heater -- for know assumed constant
-       TStopCrit % Stop criterion for 
     end
     properties %(dependent)
         TotalLoss % Heat losses of the system
