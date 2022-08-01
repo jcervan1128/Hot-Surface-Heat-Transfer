@@ -7,6 +7,7 @@ classdef PlateLoss
        Width {mustBeNumeric} % Width of the plate [m]
        Thickness {mustBeNumeric} % Thickness of the plate [m]
        Material % Material ['ss' 'in' 'hexane' 'n-dodecane' 'air']
+       Surr % Surrounding ['air']
        Fluid % Fluid ['hexane' 'n-dodecane']
        Orientation % Orientation of the Plate ['v' for Vertical else horizontal]
        Mass_rate % Mass flow rate of leakage[5.6e-5 - 1.7e-4 (kg/s) **CONVERT TO g/s
@@ -16,15 +17,17 @@ classdef PlateLoss
        Loss4 % Loss in a face
        Loss5 % Loss in a face
        Loss6 % Loss in a face
-       PHeating % Thermal power of the heater -- for know assumed constant ** CONVERT TO kW
+       PHeating % Thermal power of the heater -- for know assumed constant
+       TStopCrit % Stop criterion for 
     end
     properties %(dependent)
         TotalLoss % Heat losses of the system
     end
     methods
-        function Loss = PlateLoss(m,f,Tsurr,Tface,Tfluid,l,w,t,o,Ph,mfr)
+        function Loss = PlateLoss(m,a,f,Tsurr,Tface,Tfluid,l,w,t,o,Ph,mfr)
            if nargin > 0
            Loss.Material = m;
+           Loss.Surr = a;
            Loss.Fluid = f;
            Loss.Temp_surr = Tsurr;
            Loss.Temp_face = Tface;
@@ -34,12 +37,12 @@ classdef PlateLoss
            Loss.Thickness = t;
            Loss.Orientation = o;
            Loss.Mass_rate = mfr;
-           Loss.Loss1 = ImpingementLoss(Loss.Material,Loss.Fluid,Loss.Temp_fluid,Loss.Temp_face,Loss.Length,Loss.Width,Loss.Orientation,Loss.Mass_rate);
-          % Loss.Loss1 = Faces(Loss.Material,'air',Loss.Temp_surr,Loss.Temp_face,Loss.Length,Loss.Width,Loss.Orientation);
-           Loss.Loss2 = Faces(Loss.Material,'air',Loss.Temp_surr,Loss.Temp_face,Loss.Length,Loss.Width,Loss.Orientation);
-           Loss.Loss3 = Faces(Loss.Material,'air',Loss.Temp_surr,Loss.Temp_face,Loss.Length,Loss.Thickness,Loss.Orientation);
-           Loss.Loss4 = Faces(Loss.Material,'air',Loss.Temp_surr,Loss.Temp_face,Loss.Length,Loss.Thickness,Loss.Orientation);
-           Loss.Loss5 = Faces(Loss.Material,'air',Loss.Temp_surr,Loss.Temp_face,Loss.Length,Loss.Thickness,Loss.Orientation);
+           Loss.Loss1 = Impingement(Loss.Material,Loss.Surr,Loss.Fluid,Loss.Temp_surr,Loss.Temp_fluid,Loss.Temp_face,Loss.Length,Loss.Width,Loss.Orientation,Loss.Mass_rate);
+           %Loss.Loss1 = Faces(Loss.Material,'air',Loss.Temp_surr,Loss.Temp_face,Loss.Length,Loss.Width,Loss.Orientation);
+           Loss.Loss2 = Faces(Loss.Material,Loss.Surr,Loss.Temp_surr,Loss.Temp_face,Loss.Length,Loss.Width,Loss.Orientation);
+           Loss.Loss3 = Faces(Loss.Material,Loss.Surr,Loss.Temp_surr,Loss.Temp_face,Loss.Length,Loss.Thickness,Loss.Orientation);
+           Loss.Loss4 = Faces(Loss.Material,Loss.Surr,Loss.Temp_surr,Loss.Temp_face,Loss.Length,Loss.Thickness,Loss.Orientation);
+           Loss.Loss5 = Faces(Loss.Material,Loss.Surr,Loss.Temp_surr,Loss.Temp_face,Loss.Length,Loss.Thickness,Loss.Orientation);
            Loss.Loss6 = Faces(Loss.Material,'air',Loss.Temp_surr,Loss.Temp_face,Loss.Length,Loss.Thickness,Loss.Orientation);
            Loss.PHeating = Ph;
            end
@@ -84,15 +87,15 @@ classdef PlateLoss
             options = odeset('Events',@PlateLoss.stopODE);
             [tvec,Tvec] = ode45(dummyfun, [0 tmax], Loss.Temp_face,options);
                 
-            crit = Loss.TEquil * .95;
-            time = interp1(Tvec,tvec,crit);
-            disp(append('Time to heat ',string(time),' seconds'));
-            
-            plot(tvec,Tvec);
-            grid on;
-            xlabel('Time (s)');
-            ylabel('Temeprature (K)');
-            title(append(Loss.Material.Material,' ','Plate Heating'));
+%              crit = Loss.TEquil * .95;
+%              time = interp1(Tvec,tvec,crit);
+%              disp(append('Time to heat ',string(time),' seconds'));
+%             
+%             plot(tvec,Tvec);
+%             grid on;
+%             xlabel('Time (s)');
+%             ylabel('Temeprature (K)');
+%             title(append(Loss.Loss1.Material.Material,' ','Plate Heating',' ','(',string(Loss.PHeating),'kW)'));
         end
     end
     
