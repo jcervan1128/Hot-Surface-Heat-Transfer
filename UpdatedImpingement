@@ -1,0 +1,124 @@
+classdef Impingement
+    properties %(input)
+       Temp_face {mustBeNumeric} % Temperature at the face [K]
+       Temp_surr {mustBeNumeric} % Temperature of the surrounding [K]
+       Temp_fluid {mustBeNumeric} % Temperature of the fuel [K]
+       Length {mustBeNumeric} % Length of the plate's side [m]
+       Width {mustBeNumeric} % Width of the plate's side [m]
+       Material % Material ['ss' 'in' 'hexane' 'n-dodecane' 'air']
+       Orientation % Orientation of the Plate ['v' for Vertical else horizontal]
+       Fluid % Surrounding Fluid Property
+       Leakage % ['hexane' 'n-dodecane']
+       Mass_rate  % Mass flow rate of leakage[5.6e-5 - 1.7e-4 (kg/s) **CONVERT TO g/s
+    end
+    properties %(constants)
+       Gravity = 9.81; % Earths Gravity [m/s^2]
+       Sigma = 5.67e-8; % Stefan Boltzmann Constant[W/m^2*K^4]
+    end
+    properties %(dependent)
+       Area % Area of the face
+       Rayleigh % Rayleigh Number
+       Beta % Coefficient of thermal expansion [K^-1]
+       Nusselt % Nusselt Number
+       ConvectionCoef % Convective coefficient [W/m^2*K]
+       Qrad % Radiative Losses [W]
+       Qconv % Convective Losses [W]
+       FaceLoss % Losses fue to convection and radiation
+       VapLoss % Losses due to the vaporization of the leaked fuel
+       TotalLoss % Sum of all losses associated to the face
+    end
+    methods
+        function im = Impingement(m,f,leak,Tsurr,Tfluid,Tface,l,w,o,mfr)
+           if nargin > 0
+           im.Temp_surr = Tsurr;
+           im.Temp_face = Tface;
+           im.Temp_fluid = Tfluid;
+           im.Material = Materials(m,im.Temp_face,im.Temp_surr);
+           im.Fluid = Materials(f,im.Temp_face,im.Temp_surr);
+           im.Leakage = Materials(leak,im.Temp_fluid,im.Temp_face);
+           im.Mass_rate = mfr;
+           im.Length = l;
+           im.Width = w;
+           if strcmpi(o,'v')
+               im.Orientation = 'Vertical';
+           else
+               im.Orientation = 'Horizontal';
+           end
+           end
+        end
+        
+        function aval = get_Area(im)
+            aval = im.Length * im.Width;
+        end
+        
+        function bval = get_Beta(im)
+            bval = 1/im.Material.Tfilm; % p.598 (Bergman et al.)
+        end
+        
+        % To obtain the rayleigh number the equation outlined in p.605
+        % (Bergman et al.) was used.
+        function rval = get_Rayleigh(im)
+            if strcmp(im.Orientation,'Vertical')
+                rval = im.Gravity*im.Beta*(im.Temp_face-im.Temp_surr)*im.Length^3*im.Fluid.Prandtl/im.Fluid.viscosity^2;
+            else
+                Lc = im.Area/(2*(im.Length+im.Width));
+                rval = im.Gravity*im.Beta*(im.Temp_face-im.Temp_surr)*Lc^3*im.Fluid.Prandtl/im.Fluid.viscosity^2;
+            end
+        end
+        
+        function nval = get_Nusselt(im)
+            if strcmp(im.Orientation,'Vertical')
+                if im.Rayleigh < 10^9
+                    nval = .68+.67*im.Rayleigh^.25/(1+(.492/im.Fluid.Prandtl)^(9/16))^(4/9); % p.605 (Bergman et al.)
+                else
+                    nval = (.825+.387*im.Rayleigh^(1/6)/(1+(.492/im.Fluid.Prandtl)^(9/16))^(8/27))^2; % p.605 (Bergman et al.)
+                end
+            else
+                if im.Rayleigh > 10^4 && im.Rayleigh < 10^9
+                    nval = .59*im.Rayleigh^(.25); % p.610 (Bergman et al.)
+                elseif im.Rayleigh > 10^9 && im.Rayleigh < 10^13
+                    nval = .1*im.Rayleigh^(.33); % p.610 (Bergman et al.)
+                else
+                    nval = 0; % Negligible losses
+                end
+            end
+        end
+        
+        function htc = get_ConvectionCoef(im)
+             htc = im.Fluid.k_conductivity * im.Nusselt/im.Length; % p.602 (Bergman et al.)
+        end
+        
+        function qrval = get_Qrad(im)
+            qrval = im.Sigma*im.Material.emissivity*im.Area*(im.Temp_face^4 - im.Temp_surr^4); % p.10 (Bergman et al.)
+        end
+        function qcval = get_Qconv(im)
+            qcval = im.ConvectionCoef*im.Area*(im.Temp_face-im.Temp_surr); % p.8 (Bergman et al.)
+        end
+        
+        function fl = get_FaceLoss(im)
+            fl = im.Qrad + im.Qconv;
+        end
+        function vap = get_VapLoss(im)
+            vap = im.Mass_rate*(im.Leakage.Latent+im.Leakage.capacity*(im.Leakage.CriticalTemp-im.Temp_fluid));
+        end
+        function tloss = get_TotalLoss(im)
+            tloss = im.FaceLoss + im.VapLoss;
+        end
+        function im = updateTface(im,T)
+            im.Temp_face = T;
+            im.Material = im.Material.updateTface(im.Temp_face);
+            im.Fluid = im.Fluid.updateTface(im.Temp_face);
+            im.Leakage = im.Leakage.updateTface(im.Temp_face);
+            im.Area = im.get_Area();
+            im.Beta = im.get_Beta();
+            im.Rayleigh = im.get_Rayleigh();
+            im.Nusselt = im.get_Nusselt();
+            im.ConvectionCoef = im.get_ConvectionCoef();
+            im.Qrad = im.get_Qrad();
+            im.Qconv = im.get_Qconv();
+            im.FaceLoss = im.get_FaceLoss();
+            im.VapLoss = im.get_VapLoss();
+            im.TotalLoss = im.get_TotalLoss();
+        end
+    end
+end
