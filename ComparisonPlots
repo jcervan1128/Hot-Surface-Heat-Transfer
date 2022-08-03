@@ -1,121 +1,102 @@
-%% Comparison Plots
-
-clear;
 clc;
+clear;
 close all;
-
-%% Tfinal as a function of Pheating and plate size
-% This section returns a plot of the final temperature reached by the plate
-% such that heating equals the losses. With different curves corresponding
-% to the plate dimensions.
-
-figure(1);
-
-dim = .05:.01:.1;
-generate = .1:.05:1.1;
-
-d = length(dim);
-g = length(generate);
-
-Tfinal = zeros(1,g);
-for i = 1 : d
-    for j = 1 : g
-        heat = generate(j);
-        len = dim(i);
-        p = PlateLoss('in','air','hexane',298,298,350,len,len,.01,'h',heat,.17);
-        Tfinal(j) = p.TEquil;
-    end
-    plot(generate,Tfinal);
-    grid on;
-    xlabel('PHeating (kW)');
-    ylabel('Final Temeprature (K)');
-    title(append(p.Loss1.Material.Material,' ','Plate Heating'));        
-    hold on;
-end
-legend('.05 x .05 Plate','.06 x .06 Plate','.07 x .07 Plate','.08 x .08 Plate','.09 x .09 Plate','.1 x .1 Plate');
-
-%% Tfinal as a function of Pheating and flow rate
-% This section returns a plot of the final temperature reached by the plate
-% such that heating equals the losses. With different curves corresponding
-% to the flow rates.
-
-figure(2);
-
-rate = .056:.019:.17;
-generate = .1:.05:1.1;
-
-r = length(rate);
-g = length(generate);
-
-Tfinal = zeros(1,g);
-for i = 1 : r
-    for j = 1 : g
-        heat = generate(j);
-        leak = rate(i);
-        p = PlateLoss('in','air','hexane',298,298,350,.1,.1,.01,'h',heat,leak);
-        Tfinal(j) = p.TEquil;
-    end
-    plot(generate,Tfinal);
-    grid on;
-    xlabel('PHeating (kW)');
-    ylabel('Final Temeprature (K)');
-    title(append(p.Loss1.Material.Material,' ','Plate Heating'));        
-    hold on;
-end
-legend('.056 g/s','.075 g/s','.094 g/s','.113 g/s','.132 g/s','.151 g/s','.17 g/s');
-
-%% Tfinal as a function of Pheating and emissivity
-% This section returns a plot of the final temperature reached by the plate
-% such that heating equals the losses. With different curves corresponding
-% to different emissivity.
-
-% NEED TO WORK ON THIS SECTION WAS PREPARING FOR A PRESENTATION AND WASN'T
-% ABLE TO MAKE THE CHANGES TO PERFORM THE VARRYING EMISSIVITY VALUES.
 
 %% t95 as a function of Pheating and plate size
 % This section returns a plot of the time to reach 95% of the plates
 % final temperature. With different curves corresponding
 % to the plate dimensions.
 
-figure(3);
+figure(1);
 
-dim = .05:.01:.1;
-generate = .1:.05:1.1;
+dim = .05:.025:.2;
+generate = .1:.1:2;
 
 d = length(dim);
 g = length(generate);
 
 t95 = zeros(1,g);
+Tfinal = zeros(1,g);
+color = ['b','g','r','c','m','k','y'];
 for i = 1 : d
     for j = 1 : g
         heat = generate(j);
         len = dim(i);
-        p = PlateLoss('in','air','hexane',298,298,350,len,len,.01,'h',heat,.17);
-        if heat <= .2
-            [t,T] = p.ODESolve(2700,p.TEquil);
+        p = PlateLoss('ss','air','hexane',298,298,350,len,len,.01,'h',heat,.17,.7);
+        if heat <= .1
+            [t,T] = p.ODESolve(6000,p.TEquil);
+        elseif heat <= .2
+            if len > .14 && len < .21
+                [t,T] = p.ODESolve(6000,p.TEquil);
+            else
+                [t,T] = p.ODESolve(2700,p.TEquil);
+            end
         elseif heat <= .3
-            [t,T] = p.ODESolve(1800,p.TEquil);
+            if len > .14 && len < .21
+                [t,T] = p.ODESolve(6000,p.TEquil);
+            else
+                [t,T] = p.ODESolve(2000,p.TEquil);
+            end
         elseif heat <= .45
-            [t,T] = p.ODESolve(1600,p.TEquil);
+            if len > .14 && len < .21
+                [t,T] = p.ODESolve(6000,p.TEquil);
+            else
+                [t,T] = p.ODESolve(1600,p.TEquil);
+            end
         elseif heat <=.6
-            [t,T] = p.ODESolve(1200,p.TEquil);
+            if len > .14 && len < .21
+                [t,T] = p.ODESolve(2700,p.TEquil);
+            else
+                [t,T] = p.ODESolve(1200,p.TEquil);
+            end
         elseif heat <= .9
-            [t,T] = p.ODESolve(1000,p.TEquil);
+            if len > .14 && len < .21
+                [t,T] = p.ODESolve(2000,p.TEquil);
+            else
+                [t,T] = p.ODESolve(1000,p.TEquil);
+            end
+        elseif heat <= 1.2
+            if len > .14 && len < .21
+                [t,T] = p.ODESolve(2000,p.TEquil);
+            else
+                [t,T] = p.ODESolve(800,p.TEquil);
+            end
+        elseif heat <= 1.4
+            if len > .14 && len < .21
+                [t,T] = p.ODESolve(2000,p.TEquil);
+            else
+                [t,T] = p.ODESolve(700,p.TEquil);
+            end
+        elseif heat <= 1.7
+            if len > .14 && len < .21
+                [t,T] = p.ODESolve(2000,p.TEquil);
+            else
+                [t,T] = p.ODESolve(600,p.TEquil);
+            end
         else
-           [t,T] = p.ODESolve(800,p.TEquil); 
+            if len > .14 && len < .21
+                [t,T] = p.ODESolve(1200,p.TEquil);
+            else
+                [t,T] = p.ODESolve(500,p.TEquil);
+            end
         end
         crit = p.TEquil * .95;
         time = interp1(T,t,crit);
-        t95(j) = time;
+        t95(j) = time/60;
+        Tfinal(j) = p.TEquil;
     end
-    plot(generate,t95);
+    yyaxis left
+    plot(generate,Tfinal,append('-',color(i)));
+    ylabel('T_f (K)');
+    yyaxis right
+    plot(generate,t95,append('o',color(i)));
     grid on;
     xlabel('PHeating (kW)');
-    ylabel('t95 (s)');
+    ylabel('t95 (min)');
     title(append(p.Loss1.Material.Material,' ','Plate Heating'));        
     hold on;
 end
-legend('.05 x .05 Plate','.06 x .06 Plate','.07 x .07 Plate','.08 x .08 Plate','.09 x .09 Plate','.1 x .1 Plate');
+legend('.05 x .05 Plate','.075 x .075 Plate','.1 x .1 Plate','.125 x .125 Plate','.15 x .15 Plate','.175 x .175 Plate','.2 x .2 Plate');
 
 
 %% t95 as a function of Pheating and flow rate
@@ -123,21 +104,25 @@ legend('.05 x .05 Plate','.06 x .06 Plate','.07 x .07 Plate','.08 x .08 Plate','
 % final temperature. With different curves corresponding
 % to the flow rate.
 
-figure(4)
+figure(2);
 
-rate = .056:.019:.17;
-generate = .1:.05:1.1;
+rate = .056:.0228:.17;
+generate = .1:.05:2;
 
 r = length(rate);
 g = length(generate);
 
 t95 = zeros(1,g);
-for i = 1 : d
+Tfinal = zeros(1,g);
+color = ['b','g','r','c','m','k','y'];
+for i = 1 : r
     for j = 1 : g
         heat = generate(j);
         leak = rate(i);
-        p = PlateLoss('in','air','hexane',298,298,350,.1,.1,.01,'h',heat,leak);
-        if heat <= .2
+        p = PlateLoss('ss','air','hexane',298,298,350,.1,.1,.01,'h',heat,leak,.62);
+        if heat <= .1
+            [t,T] = p.ODESolve(6000,p.TEquil);
+        elseif heat <= .2
             [t,T] = p.ODESolve(2700,p.TEquil);
         elseif heat <= .3
             [t,T] = p.ODESolve(1800,p.TEquil);
@@ -152,22 +137,75 @@ for i = 1 : d
         end
         crit = p.TEquil * .95;
         time = interp1(T,t,crit);
-        t95(j) = time;
+        t95(j) = time/60;
+        Tfinal(j) = p.TEquil;
     end
-    plot(generate,t95);
+     yyaxis left
+    plot(generate,Tfinal,append('-',color(i)));
+    ylabel('T_f (K)');
+    yyaxis right
+    plot(generate,t95,append('o',color(i)));
     grid on;
     xlabel('PHeating (kW)');
-    ylabel('t95 (s)');
+    ylabel('t95 (min)');
     title(append(p.Loss1.Material.Material,' ','Plate Heating'));        
     hold on;
 end
-legend('.056 g/s','.075 g/s','.094 g/s','.113 g/s','.132 g/s','.151 g/s','.17 g/s');
-
+legend('.056 g/s','.0788 g/s','.1016 g/s','.1244 g/s','.1472 g/s','.17 g/s');
 
 %% t95 as a function of Pheating and emissivity
 % This section returns a plot of the time to reach 95% of the plates
 % final temperature. With different curves corresponding
 % to the emissivity.
 
-% NEED TO WORK ON THIS SECTION WAS PREPARING FOR A PRESENTATION AND WASN'T
-% ABLE TO MAKE THE CHANGES TO PERFORM THE VARRYING EMISSIVITY VALUES.
+figure(3);
+
+% emissivity = .45:.09:.9; % for inconel 601
+emissivity = .5:.04:.7; % for stainless steel 304
+generate = .1:.05:2;
+
+e = length(emissivity);
+g = length(generate);
+
+t95 = zeros(1,g);
+Tfinal = zeros(1,g);
+color = ['b','g','r','c','m','k','y'];
+for i = 1 : e
+    for j = 1 : g
+        heat = generate(j);
+        emi = emissivity(i);
+        p = PlateLoss('ss','air','hexane',298,298,350,.1,.1,.01,'h',heat,.17,emi);
+        if heat <= .1
+            [t,T] = p.ODESolve(6000,p.TEquil);
+        elseif heat <= .2
+            [t,T] = p.ODESolve(3000,p.TEquil);
+        elseif heat <= .3
+            [t,T] = p.ODESolve(1800,p.TEquil);
+        elseif heat <= .45
+            [t,T] = p.ODESolve(1600,p.TEquil);
+        elseif heat <=.6
+            [t,T] = p.ODESolve(1200,p.TEquil);
+        elseif heat <= .9
+            [t,T] = p.ODESolve(1000,p.TEquil);
+        else 
+           [t,T] = p.ODESolve(500,p.TEquil); 
+        end
+        crit = p.TEquil * .95;
+        time = interp1(T,t,crit);
+        t95(j) = time/60;
+        Tfinal(j) = p.TEquil;
+    end
+    yyaxis left
+    plot(generate,Tfinal,append('-',color(i)));
+    ylabel('T_f (K)');
+    yyaxis right
+    plot(generate,t95,append('o',color(i)));
+    grid on;
+    xlabel('PHeating (kW)');
+    ylabel('t95 (min)');
+    title(append(p.Loss1.Material.Material,' ','Plate Heating'));        
+    hold on;
+end
+% legend('epsilon = .45','.54','.63','.72','.81','.9');% For inconel
+legend('epsilon = .5','.54','.58','.62','.66','.7'); % For Stainless Steel
+
