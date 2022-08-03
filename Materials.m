@@ -19,7 +19,7 @@ classdef Materials
         airDtabase % Table of air properties
     end
     methods
-        function mat = Materials(m,Tface,Tsurr)
+        function mat = Materials(m,Tface,Tsurr,e)
             if nargin > 0
             mat.Tface = Tface;
             mat.Tsurr = Tsurr;
@@ -29,9 +29,11 @@ classdef Materials
             if strcmp(m,'ss')
                 mat.Material = 'Stainless Steel 304';
                 mat.rho = 8000;
+                mat.Emissivity = e;
             elseif strcmp(m,'in')
                 mat.Material = 'Inconel 601';
                 mat.rho = 8192;
+                mat.Emissivity = e;
             elseif strcmp(m,'hexane')
                 mat.Material = 'Hexane';
                 mat.Latent = 371.337; 
@@ -53,15 +55,15 @@ classdef Materials
             ftemp = (mat.Tface+mat.Tsurr)/2; % P.406 (Bergman et al.)
         end
         
-        function eval = get_emissivity(mat)
-            if strcmp(mat.Material,'Stainless Steel 304')
-                eval = .61; 
-            elseif strcmp(mat.Material,'Inconel 601')
-                eval = .7;
-            else
-                eval = 0;
-            end
-        end
+%         function eval = get_emissivity(mat)
+%             if strcmp(mat.Material,'Stainless Steel 304')
+%                 eval = .61; 
+%             elseif strcmp(mat.Material,'Inconel 601')
+%                 eval = .7;
+%             else
+%                 eval = 0;
+%             end
+%         end
         
         function val = get_capacity(mat)
             if strcmp(mat.Material,'Stainless Steel 304')
