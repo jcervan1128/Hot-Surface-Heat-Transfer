@@ -7,6 +7,7 @@ classdef Faces
        Material % Material ['ss' 'in' 'hexane' 'n-dodecane' 'air']
        Orientation % Orientation of the Plate ['v' for Vertical else horizontal]
        Fluid % Surrounding Fluid Property
+       Emissivity % Emissivity of the material
     end
     properties %(constants)
        Gravity = 9.81; % Earths Gravity [m/s^2]
@@ -23,17 +24,13 @@ classdef Faces
        FaceLoss % Total Losses associated to the face
     end
     methods
-        function fac = Faces(m,f,Tsurr,Tface,l,w,o)
+        function fac = Faces(m,f,Tsurr,Tface,l,w,o,e)
            if nargin > 0
            fac.Temp_surr = Tsurr;
            fac.Temp_face = Tface;
-           if strcmp(class(m),'Materials')
-               fac.Material = m;
-           else
-               m = lower(m);
-               fac.Material = Materials(m,fac.Temp_face,fac.Temp_surr);
-           end
-           fac.Fluid = Materials(f,fac.Temp_face,fac.Temp_surr);
+           fac.Emissivity = e;
+           fac.Material = Materials(m,fac.Temp_face,fac.Temp_surr,fac.Emissivity);
+           fac.Fluid = Materials(f,fac.Temp_face,fac.Temp_surr,0);
            fac.Length = l;
            fac.Width = w;
            if strcmpi(o,'v')
