@@ -10,6 +10,7 @@ classdef Impingement
        Fluid % Surrounding Fluid Property
        Leakage % ['hexane' 'n-dodecane']
        Mass_rate  % Mass flow rate of leakage[5.6e-5 - 1.7e-4 (kg/s) **CONVERT TO g/s
+       Emissivity % Emissivity of the material
     end
     properties %(constants)
        Gravity = 9.81; % Earths Gravity [m/s^2]
@@ -28,14 +29,15 @@ classdef Impingement
        TotalLoss % Sum of all losses associated to the face
     end
     methods
-        function im = Impingement(m,f,leak,Tsurr,Tfluid,Tface,l,w,o,mfr)
+        function im = Impingement(m,f,leak,Tsurr,Tfluid,Tface,l,w,o,mfr,e)
            if nargin > 0
            im.Temp_surr = Tsurr;
            im.Temp_face = Tface;
            im.Temp_fluid = Tfluid;
-           im.Material = Materials(m,im.Temp_face,im.Temp_surr);
-           im.Fluid = Materials(f,im.Temp_face,im.Temp_surr);
-           im.Leakage = Materials(leak,im.Temp_fluid,im.Temp_face);
+           im.Emissivity = e;
+           im.Material = Materials(m,im.Temp_face,im.Temp_surr,im.Emissivity);
+           im.Fluid = Materials(f,im.Temp_face,im.Temp_surr,im.Emissivity);
+           im.Leakage = Materials(leak,im.Temp_fluid,im.Temp_face,im,Emissivity);
            im.Mass_rate = mfr;
            im.Length = l;
            im.Width = w;
