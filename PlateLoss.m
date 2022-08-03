@@ -19,12 +19,13 @@ classdef PlateLoss
        Loss6 % Loss in a face
        PHeating % Thermal power of the heater -- for know assumed constant
        TStopCrit % Stop criterion for 
+       Emissivity % Emissivity of the plate material
     end
     properties %(dependent)
         TotalLoss % Heat losses of the system
     end
     methods
-        function Loss = PlateLoss(m,a,f,Tsurr,Tface,Tfluid,l,w,t,o,Ph,mfr)
+        function Loss = PlateLoss(m,a,f,Tsurr,Tface,Tfluid,l,w,t,o,Ph,mfr,e)
            if nargin > 0
            Loss.Material = m;
            Loss.Surr = a;
@@ -37,13 +38,14 @@ classdef PlateLoss
            Loss.Thickness = t;
            Loss.Orientation = o;
            Loss.Mass_rate = mfr;
-           Loss.Loss1 = Impingement(Loss.Material,Loss.Surr,Loss.Fluid,Loss.Temp_surr,Loss.Temp_fluid,Loss.Temp_face,Loss.Length,Loss.Width,Loss.Orientation,Loss.Mass_rate);
+           Loss.Emissivity = e;
+           Loss.Loss1 = Impingement(Loss.Material,Loss.Surr,Loss.Fluid,Loss.Temp_surr,Loss.Temp_fluid,Loss.Temp_face,Loss.Length,Loss.Width,Loss.Orientation,Loss.Mass_rate,Loss.Emissivity);
            %Loss.Loss1 = Faces(Loss.Material,'air',Loss.Temp_surr,Loss.Temp_face,Loss.Length,Loss.Width,Loss.Orientation);
-           Loss.Loss2 = Faces(Loss.Material,Loss.Surr,Loss.Temp_surr,Loss.Temp_face,Loss.Length,Loss.Width,Loss.Orientation);
-           Loss.Loss3 = Faces(Loss.Material,Loss.Surr,Loss.Temp_surr,Loss.Temp_face,Loss.Length,Loss.Thickness,Loss.Orientation);
-           Loss.Loss4 = Faces(Loss.Material,Loss.Surr,Loss.Temp_surr,Loss.Temp_face,Loss.Length,Loss.Thickness,Loss.Orientation);
-           Loss.Loss5 = Faces(Loss.Material,Loss.Surr,Loss.Temp_surr,Loss.Temp_face,Loss.Length,Loss.Thickness,Loss.Orientation);
-           Loss.Loss6 = Faces(Loss.Material,'air',Loss.Temp_surr,Loss.Temp_face,Loss.Length,Loss.Thickness,Loss.Orientation);
+           Loss.Loss2 = Faces(Loss.Material,Loss.Surr,Loss.Temp_surr,Loss.Temp_face,Loss.Length,Loss.Width,Loss.Orientation,Loss.Emissivity);
+           Loss.Loss3 = Faces(Loss.Material,Loss.Surr,Loss.Temp_surr,Loss.Temp_face,Loss.Length,Loss.Thickness,Loss.Orientation,Loss.Emissivity);
+           Loss.Loss4 = Faces(Loss.Material,Loss.Surr,Loss.Temp_surr,Loss.Temp_face,Loss.Length,Loss.Thickness,Loss.Orientation,Loss.Emissivity);
+           Loss.Loss5 = Faces(Loss.Material,Loss.Surr,Loss.Temp_surr,Loss.Temp_face,Loss.Length,Loss.Thickness,Loss.Orientation,Loss.Emissivity);
+           Loss.Loss6 = Faces(Loss.Material,'air',Loss.Temp_surr,Loss.Temp_face,Loss.Length,Loss.Thickness,Loss.Orientation,Loss.Emissivity);
            Loss.PHeating = Ph;
            end
         end
