@@ -106,7 +106,7 @@ classdef Materials
         function mat = updateTface(mat,T)
             mat.Tface = T;
             mat.Tfilm = mat.get_Tfilm();
-            mat.emissivity = mat.get_emissivity();
+%             mat.emissivity = mat.get_emissivity();
             mat.capacity = mat.get_capacity();
             mat.viscosity = mat.get_viscosity();
             mat.k_conductivity = mat.get_k_conductivity();
