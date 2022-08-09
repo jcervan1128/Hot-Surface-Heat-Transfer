@@ -86,7 +86,7 @@ classdef PlateLoss
             
             PlateLoss.setTStopCrit(TStopCrit);
             dummyfun = @(t,T) Loss.ODERHS(T);
-            options = odeset('Events',@PlateLoss.stopODE);
+             options = odeset('Events',@PlateLoss.stopODE,'RelTol',1e-5,'AbsTol',1e-9);
             [tvec,Tvec] = ode45(dummyfun, [0 tmax], Loss.Temp_face,options);
                 
 %              crit = Loss.TEquil * .95;
