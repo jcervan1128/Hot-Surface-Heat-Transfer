@@ -209,3 +209,95 @@ end
 % legend('epsilon = .45','.54','.63','.72','.81','.9');% For inconel
 legend('epsilon = .5','.54','.58','.62','.66','.7'); % For Stainless Steel
 
+%% Plot for bigger dimensions of plates running until 5kW.
+
+figure(6);
+
+dim = .15:.025:.2;
+generate = .1:.1:5;
+
+d = length(dim);
+g = length(generate);
+
+t95 = zeros(1,g);
+Tfinal = zeros(1,g);
+color = ['b','g','r','c','m','k','y'];
+for i = 1 : d
+    for j = 1 : g
+        heat = generate(j);
+        len = dim(i);
+        p = PlateLoss('in','air','hexane',298,298,350,len,len,.01,'h',heat,.17,.6);
+        if heat <= .1
+            [t,T] = p.ODESolve(6000,p.TEquil);
+        elseif heat <= .2
+            if len > .14 && len < .21
+                [t,T] = p.ODESolve(6000,p.TEquil);
+            else
+                [t,T] = p.ODESolve(2700,p.TEquil);
+            end
+        elseif heat <= .3
+            if len > .14 && len < .21
+                [t,T] = p.ODESolve(6000,p.TEquil);
+            else
+                [t,T] = p.ODESolve(2000,p.TEquil);
+            end
+        elseif heat <= .45
+            if len > .14 && len < .21
+                [t,T] = p.ODESolve(6000,p.TEquil);
+            else
+                [t,T] = p.ODESolve(1600,p.TEquil);
+            end
+        elseif heat <=.6
+            if len > .14 && len < .21
+                [t,T] = p.ODESolve(2700,p.TEquil);
+            else
+                [t,T] = p.ODESolve(1200,p.TEquil);
+            end
+        elseif heat <= .9
+            if len > .14 && len < .21
+                [t,T] = p.ODESolve(2000,p.TEquil);
+            else
+                [t,T] = p.ODESolve(1000,p.TEquil);
+            end
+        elseif heat <= 1.2
+            if len > .14 && len < .21
+                [t,T] = p.ODESolve(2000,p.TEquil);
+            else
+                [t,T] = p.ODESolve(800,p.TEquil);
+            end
+        elseif heat <= 1.4
+            if len > .14 && len < .21
+                [t,T] = p.ODESolve(2000,p.TEquil);
+            else
+                [t,T] = p.ODESolve(700,p.TEquil);
+            end
+        elseif heat <= 1.7
+            if len > .14 && len < .21
+                [t,T] = p.ODESolve(2000,p.TEquil);
+            else
+                [t,T] = p.ODESolve(600,p.TEquil);
+            end
+        else
+            if len > .14 && len < .21
+                [t,T] = p.ODESolve(1200,p.TEquil);
+            else
+                [t,T] = p.ODESolve(500,p.TEquil);
+            end
+        end
+        crit = p.TEquil * .95;
+        time = interp1(T,t,crit);
+        t95(j) = time/60;
+        Tfinal(j) = p.TEquil;
+    end
+    yyaxis left
+    plot(generate,Tfinal,append('-',color(i)));
+    ylabel('T_f (K)');
+    yyaxis right
+    plot(generate,t95,append('o',color(i)));
+    grid on;
+    xlabel('PHeating (kW)');
+    ylabel('t95 (min)');
+    title(append(p.Loss1.Material.Material,' ','Plate Heating'));        
+    hold on;
+end
+legend('.15 x .15 Plate','.175 x .175 Plate','.2 x .2 Plate');
